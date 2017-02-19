@@ -7,15 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CC2ACA041E5A63E7004BA2A6 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2ACA031E5A63E7004BA2A6 /* AppConfig.swift */; };
 		CCDECEEB1E58A9D400CFACCF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDECEEA1E58A9D400CFACCF /* AppDelegate.swift */; };
 		CCDECEED1E58A9E000CFACCF /* AppFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDECEEC1E58A9E000CFACCF /* AppFactory.swift */; };
+		CCDECEF11E58DC5900CFACCF /* GCDWebServers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CCDECEF01E58DC5900CFACCF /* GCDWebServers.framework */; };
+		CCDECEF41E59096700CFACCF /* StreamProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDECEF31E59096700CFACCF /* StreamProxy.swift */; };
+		CCDECF0A1E5914AD00CFACCF /* URLSession+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDECF091E5914AD00CFACCF /* URLSession+Utils.swift */; };
 		CCFAE6E01E37E355005300F8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CCFAE6D81E37E355005300F8 /* Assets.xcassets */; };
 		CCFAE6E11E37E355005300F8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CCFAE6D91E37E355005300F8 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CC2ACA031E5A63E7004BA2A6 /* AppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		CCDECEEA1E58A9D400CFACCF /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CCDECEEC1E58A9E000CFACCF /* AppFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppFactory.swift; sourceTree = "<group>"; };
+		CCDECEF01E58DC5900CFACCF /* GCDWebServers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GCDWebServers.framework; path = Carthage/Build/iOS/GCDWebServers.framework; sourceTree = "<group>"; };
+		CCDECEF31E59096700CFACCF /* StreamProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamProxy.swift; sourceTree = "<group>"; };
+		CCDECF091E5914AD00CFACCF /* URLSession+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "URLSession+Utils.swift"; sourceTree = "<group>"; };
 		CCFAE6BE1E37E29A005300F8 /* VideoPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CCFAE6D81E37E355005300F8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CCFAE6DA1E37E355005300F8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -27,6 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CCDECEF11E58DC5900CFACCF /* GCDWebServers.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,8 +47,25 @@
 			children = (
 				CCDECEEA1E58A9D400CFACCF /* AppDelegate.swift */,
 				CCDECEEC1E58A9E000CFACCF /* AppFactory.swift */,
+				CC2ACA031E5A63E7004BA2A6 /* AppConfig.swift */,
 			);
 			path = application;
+			sourceTree = "<group>";
+		};
+		CCDECEEF1E58DC5900CFACCF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CCDECEF01E58DC5900CFACCF /* GCDWebServers.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		CCDECF081E59148300CFACCF /* extensions */ = {
+			isa = PBXGroup;
+			children = (
+				CCDECF091E5914AD00CFACCF /* URLSession+Utils.swift */,
+			);
+			path = extensions;
 			sourceTree = "<group>";
 		};
 		CCFAE6B51E37E29A005300F8 = {
@@ -47,6 +73,7 @@
 			children = (
 				CCFAE6C01E37E29A005300F8 /* VideoPlayer */,
 				CCFAE6BF1E37E29A005300F8 /* Products */,
+				CCDECEEF1E58DC5900CFACCF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -62,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				CCDECEE91E58A9D400CFACCF /* application */,
+				CCDECF081E59148300CFACCF /* extensions */,
 				CCFAE6D61E37E355005300F8 /* model */,
 				CCFAE6D71E37E355005300F8 /* res */,
 			);
@@ -71,6 +99,7 @@
 		CCFAE6D61E37E355005300F8 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				CCDECEF31E59096700CFACCF /* StreamProxy.swift */,
 			);
 			path = model;
 			sourceTree = "<group>";
@@ -95,6 +124,7 @@
 				CCFAE6BA1E37E29A005300F8 /* Sources */,
 				CCFAE6BB1E37E29A005300F8 /* Frameworks */,
 				CCFAE6BC1E37E29A005300F8 /* Resources */,
+				CCDECEF21E58DC7E00CFACCF /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -152,13 +182,33 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		CCDECEF21E58DC7E00CFACCF /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/GCDWebServers.framework",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		CCFAE6BA1E37E29A005300F8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CCDECF0A1E5914AD00CFACCF /* URLSession+Utils.swift in Sources */,
+				CC2ACA041E5A63E7004BA2A6 /* AppConfig.swift in Sources */,
 				CCDECEED1E58A9E000CFACCF /* AppFactory.swift in Sources */,
 				CCDECEEB1E58A9D400CFACCF /* AppDelegate.swift in Sources */,
+				CCDECEF41E59096700CFACCF /* StreamProxy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,6 +327,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = L4J5Y5B6JJ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = VideoPlayer/res/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.ivanobilenchi.VideoPlayer;
@@ -290,6 +344,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = L4J5Y5B6JJ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = VideoPlayer/res/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.ivanobilenchi.VideoPlayer;

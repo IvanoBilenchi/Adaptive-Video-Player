@@ -9,12 +9,22 @@ import AVKit
 
 class AppFactory {
     
+    // MARK: Model
+    
+    lazy var proxy: StreamProxy = {
+        return StreamProxy(remotePlaylist: AppConfig.playlistUrl)
+    }()
+    
     // MARK: Controller
     
     lazy var rootViewController: UIViewController = {
         let controller = AVPlayerViewController()
-        let player = AVPlayer(url: URL(string: "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8")!)
-        controller.player = player
+        
+        if let playlistUrl = self.proxy.localPlaylist {
+            let player = AVPlayer(url: playlistUrl)
+            controller.player = player
+        }
+        
         return controller
     }()
 }

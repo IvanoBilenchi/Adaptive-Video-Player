@@ -20,6 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let window = UIWindow(frame: UIScreen.main.bounds)
         
+        factory.proxy.start(withPort: AppConfig.serverPort, bonjourName: nil)
+        
         window.rootViewController = factory.rootViewController
         window.makeKeyAndVisible()
         
