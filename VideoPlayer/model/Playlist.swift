@@ -17,11 +17,11 @@ final class MasterPlaylist: Playlist {
     
     let url: URL
     var type: PlaylistType { return .master }
-    let mediaPlaylists: [MediaPlaylist]
+    let mediaPlaylists: [URL: MediaPlaylist]
     
     // MARK: Lifecycle
     
-    init(url: URL, mediaPlaylists: [MediaPlaylist]) {
+    init(url: URL, mediaPlaylists: [URL: MediaPlaylist]) {
         self.url = url
         self.mediaPlaylists = mediaPlaylists
     }
@@ -31,7 +31,7 @@ final class MasterPlaylist: Playlist {
     func segment(withUrl url: URL) -> Segment? {
         var segment: Segment?
         
-        for playlist in mediaPlaylists {
+        for playlist in mediaPlaylists.values {
             segment = playlist.segment(withUrl: url)
             
             if segment != nil {

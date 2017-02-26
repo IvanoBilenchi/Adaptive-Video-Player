@@ -49,12 +49,12 @@ class FixedQualityPolicy: StreamProxyPolicy {
             
             switch quality {
             case .min:
-                mediaPlaylist = playlist.mediaPlaylists.min(by: qualityComparator)
+                mediaPlaylist = playlist.mediaPlaylists.values.min(by: qualityComparator)
             case .max:
-                mediaPlaylist = playlist.mediaPlaylists.max(by: qualityComparator)
+                mediaPlaylist = playlist.mediaPlaylists.values.max(by: qualityComparator)
             case .mid:
                 if !playlist.mediaPlaylists.isEmpty {
-                    let playlists = playlist.mediaPlaylists.sorted(by: qualityComparator)
+                    let playlists = playlist.mediaPlaylists.values.sorted(by: qualityComparator)
                     let midIdx = Int(ceil(Double(playlists.count) / 2.0))
                     mediaPlaylist = playlists[midIdx]
                 }

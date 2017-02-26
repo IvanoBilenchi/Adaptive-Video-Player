@@ -58,7 +58,7 @@ class StreamProxy: GCDWebServer {
             guard let urlRequest = URLRequest(proxying: request, toHost: self.remotePlaylistUrl) else {
                 return self.errorResponse(withStatusCode: HTTP.ResponseCode.badRequest)
             }
-            return self.transparentResponse(forRequest: urlRequest)
+            return self.defaultResponse(forRequest: urlRequest)
         }
         
         // Playlist handler
@@ -70,7 +70,7 @@ class StreamProxy: GCDWebServer {
         }
         
         // Segment handler
-        addHandler(forMethod: HTTP.Method.get, pathRegex: "^.*\\.(ts|mp4)$", request: GCDWebServerRequest.self) { [unowned self] (request) -> GCDWebServerResponse? in
+        addHandler(forMethod: HTTP.Method.get, pathRegex: "^.*\\.(ts|m4s|mp4)$", request: GCDWebServerRequest.self) { [unowned self] (request) -> GCDWebServerResponse? in
             guard let urlRequest = URLRequest(proxying: request, toHost: self.remotePlaylistUrl) else {
                 return self.errorResponse(withStatusCode: HTTP.ResponseCode.badRequest)
             }
@@ -81,7 +81,7 @@ class StreamProxy: GCDWebServer {
     // MARK: Proxy responses
     
     /// Default request handler, return the remote server response as-is
-    private func transparentResponse(forRequest request: URLRequest) -> GCDWebServerResponse {
+    private func defaultResponse(forRequest request: URLRequest) -> GCDWebServerResponse {
         return response(forRequest: request).gcdResponse
     }
     
@@ -154,18 +154,13 @@ extension StreamProxy: MediaPlaylistProvider {
 
 private extension URL {
     
-    /// Creates a new URL by changing the host of an existing URL. If newPath is provided,
-    /// the returned URL also has a different path.
-    static func byProxying(_ url: URL, toHost host: URL, newPath: String? = nil) -> URL? {
+    /// Creates a new URL by changing the host of an existing URL
+    static func byProxying(_ url: URL, toHost host: URL) -> URL? {
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         
         components?.scheme = host.scheme
         components?.host = host.host
         components?.port = host.port
-        
-        if let newPath = newPath {
-            components?.path = newPath
-        }
         
         return components?.url
     }

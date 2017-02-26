@@ -12,7 +12,9 @@ fileprivate struct HLS {
     fileprivate struct Tag {
         static let head = "#EXTM3U"
         static let mediaSegment = "#EXTINF"
+        static let mediaSegmentSequence = "#EXT-X-MEDIA-SEQUENCE"
         static let variantStream = "#EXT-X-STREAM-INF"
+        static let iFrameStream = "#EXT-X-I-FRAME-STREAM-INF"
         
         /// HLS tag parser handler
         typealias Handler = (_ contents: String?, _ attributes: Attributes) -> ()
@@ -47,7 +49,7 @@ class PlaylistParser {
     private var dir: URL!
     private var sequence: UInt = 0
     private var segments = [UInt: Segment]()
-    private var mediaPlaylists = [MediaPlaylist]()
+    private var mediaPlaylists = [URL: MediaPlaylist]()
     
     private let tagSeparators = CharacterSet.newlines.union(CharacterSet(charactersIn: ":"))
     private let quotes = CharacterSet(charactersIn: "\"")
@@ -65,24 +67,34 @@ class PlaylistParser {
         self.sequence += 1
     }
     
+    private lazy var mediaSegmentSequenceHandler: HLS.Tag.Handler = { [unowned self] (contents, attributes) in
+        guard let sequenceAttr = attributes.anonymous.first, let sequence = UInt(sequenceAttr) else {
+                return
+        }
+        
+        self.sequence = sequence
+    }
+    
     private lazy var variantStreamHandler: HLS.Tag.Handler = { [unowned self] (contents, attributes) in
-        guard let url = contents.flatMap({ URL(string: $0, relativeTo: self.dir)?.absoluteURL }),
-            let data = self.provider?.mediaPlaylistData(at: url) else {
-            return
+        guard let url = contents.flatMap({ URL(string: $0, relativeTo: self.dir)?.absoluteURL }) else {
+                return
         }
         
-        // Parse media playlists referenced in the master file
-        let parser = PlaylistParser()
-        parser.provider = self.provider
-        
-        if let mediaPlaylist = parser.parsePlaylist(withUrl: url, fromData: data) as? MediaPlaylist {
-            mediaPlaylist.resolution = attributes.named["RESOLUTION"].flatMap { self.parseResolution(fromString: $0) }
-            self.mediaPlaylists.append(mediaPlaylist)
+        self.parseMediaPlaylist(at: url, withAttributes: attributes)
+    }
+    
+    private lazy var iFrameStreamHandler: HLS.Tag.Handler = { [unowned self] (contents, attributes) in
+        guard let url = attributes.named["URI"].flatMap({ URL(string: $0, relativeTo: self.dir)?.absoluteURL }) else {
+                return
         }
+        
+        self.parseMediaPlaylist(at: url, withAttributes: attributes)
     }
     
     private lazy var handlers: [String: HLS.Tag.Handler] = [HLS.Tag.mediaSegment: self.mediaSegmentHandler,
-                                                            HLS.Tag.variantStream: self.variantStreamHandler]
+                                                            HLS.Tag.mediaSegmentSequence: self.mediaSegmentSequenceHandler,
+                                                            HLS.Tag.variantStream: self.variantStreamHandler,
+                                                            HLS.Tag.iFrameStream: self.iFrameStreamHandler]
     
     // MARK: Public methods
     
@@ -111,15 +123,18 @@ class PlaylistParser {
             // Eventually parse attributes
             let attributes = count > 1 ? parseAttributes(fromString: components[1]) : HLS.Attributes.empty()
             
-            // Attempt to get next line as contents
+            // Attempt to get next contents line
             var contents: String?
+            var lookAhead = idx+1
             
-            if idx < playlistLines.count - 1 {
-                let nextLine = playlistLines[idx+1]
+            while lookAhead < playlistLines.count && contents == nil {
+                let nextLine = playlistLines[lookAhead]
                 
                 if !nextLine.hasPrefix("#") {
                     contents = nextLine
                 }
+                
+                lookAhead += 1
             }
             
             // Invoke actual tag parsing handler
@@ -142,6 +157,21 @@ class PlaylistParser {
     }
     
     // MARK: Private methods
+    
+    private func parseMediaPlaylist(at url: URL, withAttributes attributes: HLS.Attributes) {
+        guard self.mediaPlaylists[url] == nil, let data = self.provider?.mediaPlaylistData(at: url) else {
+            return
+        }
+        
+        // Parse media playlists referenced in the master file
+        let parser = PlaylistParser()
+        parser.provider = self.provider
+        
+        if let mediaPlaylist = parser.parsePlaylist(withUrl: url, fromData: data) as? MediaPlaylist {
+            mediaPlaylist.resolution = attributes.named["RESOLUTION"].flatMap { self.parseResolution(fromString: $0) }
+            self.mediaPlaylists[url] = mediaPlaylist
+        }
+    }
     
     private func parseAttributes(fromString string: String) -> HLS.Attributes {
         guard string.characters.count > 0 else { return HLS.Attributes.empty() }
