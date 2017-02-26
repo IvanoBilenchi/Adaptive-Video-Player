@@ -12,19 +12,20 @@ class AppFactory {
     // MARK: Model
     
     lazy var proxy: StreamProxy = {
-        return StreamProxy(remotePlaylist: AppConfig.playlistUrl)
+        let proxy = StreamProxy(remotePlaylistUrl: AppConfig.playlistUrl)
+        proxy.policy = self.policy
+        return proxy
     }()
+    
+    lazy var policy: StreamProxyPolicy = FixedQualityPolicy(quality: .max)
     
     // MARK: Controller
     
     lazy var rootViewController: UIViewController = {
         let controller = AVPlayerViewController()
+        let player = AVPlayer(url: self.proxy.localPlaylistUrl)
         
-        if let playlistUrl = self.proxy.localPlaylist {
-            let player = AVPlayer(url: playlistUrl)
-            controller.player = player
-        }
-        
+        controller.player = player
         return controller
     }()
 }
