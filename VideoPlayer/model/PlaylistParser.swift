@@ -34,7 +34,7 @@ fileprivate struct HLS {
 /// The playlist parser may need to retrieve and parse
 /// additional playlists referenced in master files.
 protocol MediaPlaylistProvider: class {
-    func mediaPlaylistData(at url: URL) -> Data?
+    func mediaPlaylistData(at url: URL) -> String?
 }
 
 /// Parser for HLS playlists
@@ -98,18 +98,17 @@ class PlaylistParser {
     
     // MARK: Public methods
     
-    func parsePlaylist(withUrl url: URL, fromData data: Data) -> Playlist? {
+    func parsePlaylist(withUrl url: URL, fromString string: String) -> Playlist? {
         cleanup()
         
         let absoluteUrl = url.absoluteURL
         self.dir = absoluteUrl.deletingLastPathComponent()
         
-        guard let playlistString = String(data: data, encoding: .utf8), playlistString.hasPrefix(HLS.Tag.head) else {
+        guard string.hasPrefix(HLS.Tag.head) else {
             return nil
         }
         
-        var playlistLines = playlistString.components(separatedBy: .newlines)
-        playlistLines.remove(at: 0)
+        var playlistLines = string.components(separatedBy: .newlines)
         
         for (idx, line) in playlistLines.enumerated() where line.hasPrefix("#") {
             let components = line.components(separatedBy: tagSeparators)
@@ -159,7 +158,7 @@ class PlaylistParser {
     // MARK: Private methods
     
     private func parseMediaPlaylist(at url: URL, withAttributes attributes: HLS.Attributes) {
-        guard self.mediaPlaylists[url] == nil, let data = self.provider?.mediaPlaylistData(at: url) else {
+        guard self.mediaPlaylists[url] == nil, let string = self.provider?.mediaPlaylistData(at: url) else {
             return
         }
         
@@ -167,7 +166,7 @@ class PlaylistParser {
         let parser = PlaylistParser()
         parser.provider = self.provider
         
-        if let mediaPlaylist = parser.parsePlaylist(withUrl: url, fromData: data) as? MediaPlaylist {
+        if let mediaPlaylist = parser.parsePlaylist(withUrl: url, fromString: string) as? MediaPlaylist {
             mediaPlaylist.resolution = attributes.named["RESOLUTION"].flatMap { self.parseResolution(fromString: $0) }
             self.mediaPlaylists[url] = mediaPlaylist
         }

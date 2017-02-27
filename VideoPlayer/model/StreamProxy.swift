@@ -38,12 +38,13 @@ class StreamProxy: GCDWebServer {
     }
     
     var localPlaylistUrl: URL {
-        return URL.byProxying(playlist.url, toHost: serverURL)!
+        return playlist.url.proxying(toHost: serverURL)!
     }
     
     // MARK: Private properties
     
     private var playlistParsed = false
+    private let remoteHostUrl: URL
     
     // MARK: Lifecycle
     
@@ -51,11 +52,13 @@ class StreamProxy: GCDWebServer {
         
         // Dummy playlist, will be replaced with actual playlist after the first request
         self.playlist = MediaPlaylist(url: remotePlaylistUrl)
+        self.remoteHostUrl = remotePlaylistUrl.hostUrl()!
+        
         super.init()
         
         // Default handler
         addDefaultHandler(forMethod: HTTP.Method.get, request: GCDWebServerRequest.self) { [unowned self] (request) -> GCDWebServerResponse? in
-            guard let urlRequest = URLRequest(proxying: request, toHost: self.remotePlaylistUrl) else {
+            guard let urlRequest = URLRequest(proxying: request, toHost: self.remoteHostUrl) else {
                 return self.errorResponse(withStatusCode: HTTP.ResponseCode.badRequest)
             }
             return self.defaultResponse(forRequest: urlRequest)
@@ -63,7 +66,7 @@ class StreamProxy: GCDWebServer {
         
         // Playlist handler
         addHandler(forMethod: HTTP.Method.get, pathRegex: "^.*\\.m3u8$", request: GCDWebServerRequest.self) { [unowned self] (request) -> GCDWebServerResponse? in
-            guard let urlRequest = URLRequest(proxying: request, toHost: self.remotePlaylistUrl) else {
+            guard let urlRequest = URLRequest(proxying: request, toHost: self.remoteHostUrl) else {
                 return self.errorResponse(withStatusCode: HTTP.ResponseCode.badRequest)
             }
             return self.playlistResponse(forRequest: urlRequest)
@@ -71,7 +74,7 @@ class StreamProxy: GCDWebServer {
         
         // Segment handler
         addHandler(forMethod: HTTP.Method.get, pathRegex: "^.*\\.(ts|m4s|mp4)$", request: GCDWebServerRequest.self) { [unowned self] (request) -> GCDWebServerResponse? in
-            guard let urlRequest = URLRequest(proxying: request, toHost: self.remotePlaylistUrl) else {
+            guard let urlRequest = URLRequest(proxying: request, toHost: self.remoteHostUrl) else {
                 return self.errorResponse(withStatusCode: HTTP.ResponseCode.badRequest)
             }
             return self.segmentResponse(forRequest: urlRequest)
@@ -91,11 +94,11 @@ class StreamProxy: GCDWebServer {
         let response = self.response(forRequest: request)
         
         // Parse and store the first playlist
-        if !playlistParsed, let data = response.data {
+        if !playlistParsed, let string = response.data.flatMap({ String(data: $0, encoding: .utf8) }) {
             let parser = PlaylistParser()
             parser.provider = self
             
-            if let playlist = parser.parsePlaylist(withUrl: request.url!, fromData: data) {
+            if let playlist = parser.parsePlaylist(withUrl: request.url!, fromString: string) {
                 self.playlist = playlist
                 playlistParsed = true
             }
@@ -143,34 +146,20 @@ class StreamProxy: GCDWebServer {
 
 extension StreamProxy: MediaPlaylistProvider {
     
-    func mediaPlaylistData(at url: URL) -> Data? {
+    func mediaPlaylistData(at url: URL) -> String? {
         let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 32000)
         let output = URLSession(configuration: .default).synchronousDataTask(with: request)
-        return output.data
+        return output.data.flatMap { String(data: $0, encoding: .utf8) }
     }
 }
 
 // MARK: Private extensions
 
-private extension URL {
-    
-    /// Creates a new URL by changing the host of an existing URL
-    static func byProxying(_ url: URL, toHost host: URL) -> URL? {
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
-        
-        components?.scheme = host.scheme
-        components?.host = host.host
-        components?.port = host.port
-        
-        return components?.url
-    }
-}
-
 private extension URLRequest {
     
     /// Creates an URLRequest by proxying a GCDWebServerRequest to a new host
     init?(proxying request: GCDWebServerRequest?, toHost host: URL) {
-        if let request = request, let newUrl = URL.byProxying(request.url, toHost: host) {
+        if let request = request, let newUrl = request.url.proxying(toHost: host) {
             self.init(proxying: request, to: newUrl)
         } else {
             return nil
