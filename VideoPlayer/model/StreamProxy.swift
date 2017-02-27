@@ -47,8 +47,8 @@ class StreamProxy: GCDWebServer {
     
     // MARK: Private properties
     
-    private var playlistParsed = false
-    private let remoteHostUrl: URL
+    fileprivate var playlistParsed = false
+    fileprivate let remoteHostUrl: URL
     
     // MARK: Lifecycle
     
@@ -95,20 +95,29 @@ class StreamProxy: GCDWebServer {
     /// Playlist request handler
     private func playlistResponse(forRequest request: URLRequest) -> GCDWebServerResponse {
         
-        let response = self.response(forRequest: request)
+        let output = URLSession(configuration: .default).synchronousDataTask(with: request)
         
-        // Parse and store the first playlist
-        if !playlistParsed, let string = response.data.flatMap({ String(data: $0, encoding: .utf8) }) {
-            let parser = PlaylistParser()
-            parser.provider = self
-            
-            if let playlist = parser.parsePlaylist(withUrl: request.url!, fromString: string) {
-                self.playlist = playlist
-                playlistParsed = true
-            }
+        guard let response = output.response as? HTTPURLResponse else {
+            return internalErrorResponse(withError: output.error, data: output.data)
         }
         
-        return response.gcdResponse
+        if let string = output.data.flatMap({ String(data: $0, encoding: .utf8) }) {
+            
+            // Parse and store the first playlist
+            if !playlistParsed {
+                let parser = PlaylistParser()
+                parser.provider = self
+                
+                if let playlist = parser.parsePlaylist(withUrl: request.url!, fromString: string) {
+                    self.playlist = playlist
+                    playlistParsed = true
+                }
+            }
+            
+            // TODO: serve generated playlist
+        }
+        
+        return GCDWebServerDataResponse(with: response, data: output.data)
     }
     
     /// Segment request handler
@@ -134,14 +143,19 @@ class StreamProxy: GCDWebServer {
         return response
     }
     
+    /// Returns an "internal server error" response
+    private func internalErrorResponse(withError error: Error?, data: Data?) -> GCDWebServerResponse {
+        let dataString = data.flatMap({ String(data: $0, encoding: .utf8) })
+        let errorMsg = "Error: \(error?.localizedDescription)\nData: \(dataString)"
+        return errorResponse(withStatusCode: HTTP.ResponseCode.internalServerError, message: errorMsg)
+    }
+    
     /// Forwards a request to the remote host and returns its response
     private func response(forRequest request: URLRequest) -> (gcdResponse: GCDWebServerResponse, data: Data?) {
         let output = URLSession(configuration: .default).synchronousDataTask(with: request)
         
         guard let response = output.response as? HTTPURLResponse else {
-            let dataString = output.data.flatMap({ String(data: $0, encoding: .utf8) })
-            let errorMsg = "Error: \(output.error?.localizedDescription)\nData: \(dataString)"
-            return (errorResponse(withStatusCode: HTTP.ResponseCode.internalServerError, message: errorMsg), nil)
+            return (internalErrorResponse(withError: output.error, data: output.data), nil)
         }
         
         return (GCDWebServerDataResponse(with: response, data: output.data), output.data)
@@ -151,7 +165,7 @@ class StreamProxy: GCDWebServer {
 extension StreamProxy: MediaPlaylistProvider {
     
     func mediaPlaylistData(at url: URL) -> String? {
-        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 32000)
+        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 32000)
         let output = URLSession(configuration: .default).synchronousDataTask(with: request)
         return output.data.flatMap { String(data: $0, encoding: .utf8) }
     }
@@ -172,7 +186,7 @@ private extension URLRequest {
     
     /// Creates an URLRequest by proxying a GCDWebServerRequest to a new URL
     init(proxying request: GCDWebServerRequest, to otherUrl: URL) {
-        self.init(url: otherUrl, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 320000)
+        self.init(url: otherUrl, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 32000)
         
         httpMethod = request.method
         allHTTPHeaderFields = request.headers as! [String : String]?

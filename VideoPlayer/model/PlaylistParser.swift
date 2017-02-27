@@ -11,6 +11,7 @@ fileprivate struct HLS {
     /// HLS tags
     fileprivate struct Tag {
         static let head = "#EXTM3U"
+        static let mediaInitialization = "#EXT-X-MAP"
         static let mediaSegment = "#EXTINF"
         static let mediaSegmentSequence = "#EXT-X-MEDIA-SEQUENCE"
         static let variantStream = "#EXT-X-STREAM-INF"
@@ -51,13 +52,20 @@ class PlaylistParser {
     private var segments = [UInt: Segment]()
     private var mediaPlaylists = [URL: MediaPlaylist]()
     
-    private let tagSeparators = CharacterSet.newlines.union(CharacterSet(charactersIn: ":"))
     private let quotes = CharacterSet(charactersIn: "\"")
     
     // MARK: Handlers
     
+    private lazy var mediaInitializationHandler: HLS.Tag.Handler = { [unowned self] (contents, attributes) in
+        guard let url = attributes.named["URI"].flatMap({ self.absoluteUrl(from: $0) }) else {
+                return
+        }
+        
+        self.segments[0] = Segment(url: url, sequence: 0, duration: 0.0)
+    }
+    
     private lazy var mediaSegmentHandler: HLS.Tag.Handler = { [unowned self] (contents, attributes) in
-        guard let url = contents.flatMap({ URL(string: $0, relativeTo: self.dir)?.absoluteURL }),
+        guard let url = contents.flatMap({ self.absoluteUrl(from: $0) }),
             let durationAttr = attributes.anonymous.first, let duration = Float(durationAttr) else {
                 return
         }
@@ -76,22 +84,23 @@ class PlaylistParser {
     }
     
     private lazy var variantStreamHandler: HLS.Tag.Handler = { [unowned self] (contents, attributes) in
-        guard let url = contents.flatMap({ URL(string: $0, relativeTo: self.dir)?.absoluteURL }) else {
-                return
+        guard let url = contents.flatMap({ self.absoluteUrl(from: $0) }) else {
+            return
         }
         
         self.parseMediaPlaylist(at: url, withAttributes: attributes)
     }
     
     private lazy var iFrameStreamHandler: HLS.Tag.Handler = { [unowned self] (contents, attributes) in
-        guard let url = attributes.named["URI"].flatMap({ URL(string: $0, relativeTo: self.dir)?.absoluteURL }) else {
-                return
+        guard let url = attributes.named["URI"].flatMap({ self.absoluteUrl(from: $0) }) else {
+            return
         }
         
         self.parseMediaPlaylist(at: url, withAttributes: attributes)
     }
     
-    private lazy var handlers: [String: HLS.Tag.Handler] = [HLS.Tag.mediaSegment: self.mediaSegmentHandler,
+    private lazy var handlers: [String: HLS.Tag.Handler] = [HLS.Tag.mediaInitialization: self.mediaInitializationHandler,
+                                                            HLS.Tag.mediaSegment: self.mediaSegmentHandler,
                                                             HLS.Tag.mediaSegmentSequence: self.mediaSegmentSequenceHandler,
                                                             HLS.Tag.variantStream: self.variantStreamHandler,
                                                             HLS.Tag.iFrameStream: self.iFrameStreamHandler]
@@ -111,16 +120,16 @@ class PlaylistParser {
         var playlistLines = string.components(separatedBy: .newlines)
         
         for (idx, line) in playlistLines.enumerated() where line.hasPrefix("#") {
-            let components = line.components(separatedBy: tagSeparators)
+            let components = line.characters.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true)
             let count = components.count
             
             guard count > 0 else { continue }
             
             // Get tag
-            let tag = components[0]
+            let tag = String(components[0])
             
             // Eventually parse attributes
-            let attributes = count > 1 ? parseAttributes(fromString: components[1]) : HLS.Attributes.empty()
+            let attributes = count > 1 ? parseAttributes(fromString: String(components[1])) : HLS.Attributes.empty()
             
             // Attempt to get next contents line
             var contents: String?
@@ -156,6 +165,18 @@ class PlaylistParser {
     }
     
     // MARK: Private methods
+    
+    private func absoluteUrl(from string: String) -> URL? {
+        var url: URL?
+        
+        if string.hasPrefix("http://") || string.hasPrefix("https://") {
+            url = URL(string: string)
+        } else {
+            url = URL(string: string, relativeTo: self.dir)?.absoluteURL
+        }
+        
+        return url
+    }
     
     private func parseMediaPlaylist(at url: URL, withAttributes attributes: HLS.Attributes) {
         guard self.mediaPlaylists[url] == nil, let string = self.provider?.mediaPlaylistData(at: url) else {
