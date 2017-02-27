@@ -37,8 +37,12 @@ class StreamProxy: GCDWebServer {
         return playlist.url
     }
     
-    var localPlaylistUrl: URL {
-        return playlist.url.proxying(toHost: serverURL)!
+    var localServerUrl: URL? {
+        return serverURL
+    }
+    
+    var localPlaylistUrl: URL? {
+        return localServerUrl.flatMap { playlist.url.proxying(toHost: $0) }
     }
     
     // MARK: Private properties

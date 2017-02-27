@@ -23,9 +23,11 @@ class AppFactory {
     
     lazy var rootViewController: UIViewController = {
         let controller = AVPlayerViewController()
-        let player = AVPlayer(url: self.proxy.localPlaylistUrl)
         
-        controller.player = player
+        if let url = self.proxy.localPlaylistUrl {
+            controller.player = AVPlayer(url: url)
+        }
+        
         return controller
     }()
 }
