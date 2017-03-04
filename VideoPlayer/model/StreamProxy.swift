@@ -95,13 +95,13 @@ class StreamProxy: GCDWebServer {
     /// Playlist request handler
     private func playlistResponse(forRequest request: URLRequest) -> GCDWebServerResponse {
         
-        let output = URLSession(configuration: .default).synchronousDataTask(with: request)
+        var output = URLSession(configuration: .default).synchronousDataTask(with: request)
         
         guard let response = output.response as? HTTPURLResponse else {
             return internalErrorResponse(withError: output.error, data: output.data)
         }
         
-        if let string = output.data.flatMap({ String(data: $0, encoding: .utf8) }) {
+        if var string = output.data.flatMap({ String(data: $0, encoding: .utf8) }) {
             
             // Parse and store the first playlist
             if !playlistParsed {
@@ -114,7 +114,11 @@ class StreamProxy: GCDWebServer {
                 }
             }
             
-            // TODO: serve generated playlist
+            // Convert absolute remote URLs to local
+            string = string.replacingOccurrences(of: remoteHostUrl.absoluteString + "/",
+                                                 with: localServerUrl!.absoluteString,
+                                                 options: .caseInsensitive)
+            output.data = string.data(using: .utf8)
         }
         
         return GCDWebServerDataResponse(with: response, data: output.data)
@@ -212,5 +216,6 @@ private extension GCDWebServerDataResponse {
         }
         
         setValue(nil, forAdditionalHeader: "Content-Encoding")
+        setValue(nil, forAdditionalHeader: "Content-Length")
     }
 }
