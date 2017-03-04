@@ -5,16 +5,11 @@
 
 import Foundation
 
-/// Segment replacement policies
-protocol StreamProxyPolicy: class {
-    func streamProxy(_ proxy: StreamProxy, replacementForSegment segment: Segment) -> Segment
-}
-
 /// This policy always returns segments of a fixed quality
 class FixedQualityPolicy: StreamProxyPolicy {
     
     enum Quality {
-        case min, mid, max
+        case min, mid, max, withResolution(Resolution)
     }
     
     // MARK: Public properties
@@ -58,6 +53,8 @@ class FixedQualityPolicy: StreamProxyPolicy {
                     let midIdx = Int(ceil(Double(playlists.count) / 2.0))
                     mediaPlaylist = playlists[midIdx]
                 }
+            case .withResolution(let resolution):
+                mediaPlaylist = playlist.mediaPlaylists.values.first { $0.resolution == .some(resolution) }
             }
             
             newSegment = mediaPlaylist?.segment(withSequence: segment.sequence)

@@ -13,6 +13,9 @@
 		CC3862D01E619A7200D6A598 /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3862CF1E619A7200D6A598 /* Playlist.swift */; };
 		CC3862D21E61E43700D6A598 /* Segment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3862D11E61E43700D6A598 /* Segment.swift */; };
 		CCA575D21E632F58002B7CF2 /* StreamProxyPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCA575D11E632F58002B7CF2 /* StreamProxyPolicy.swift */; };
+		CCD085691E6ADB10008E6FA6 /* Mutex.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD085681E6ADB10008E6FA6 /* Mutex.swift */; };
+		CCD085701E6AEF43008E6FA6 /* ResolutionSelectionControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD0856F1E6AEF43008E6FA6 /* ResolutionSelectionControl.swift */; };
+		CCD085731E6B3162008E6FA6 /* PlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD085721E6B3162008E6FA6 /* PlayerViewController.swift */; };
 		CCDECEEB1E58A9D400CFACCF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDECEEA1E58A9D400CFACCF /* AppDelegate.swift */; };
 		CCDECEED1E58A9E000CFACCF /* AppFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDECEEC1E58A9E000CFACCF /* AppFactory.swift */; };
 		CCDECEF11E58DC5900CFACCF /* GCDWebServers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CCDECEF01E58DC5900CFACCF /* GCDWebServers.framework */; };
@@ -29,6 +32,9 @@
 		CC3862CF1E619A7200D6A598 /* Playlist.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Playlist.swift; sourceTree = "<group>"; };
 		CC3862D11E61E43700D6A598 /* Segment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Segment.swift; sourceTree = "<group>"; };
 		CCA575D11E632F58002B7CF2 /* StreamProxyPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamProxyPolicy.swift; sourceTree = "<group>"; };
+		CCD085681E6ADB10008E6FA6 /* Mutex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mutex.swift; sourceTree = "<group>"; };
+		CCD0856F1E6AEF43008E6FA6 /* ResolutionSelectionControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResolutionSelectionControl.swift; sourceTree = "<group>"; };
+		CCD085721E6B3162008E6FA6 /* PlayerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayerViewController.swift; sourceTree = "<group>"; };
 		CCDECEEA1E58A9D400CFACCF /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CCDECEEC1E58A9E000CFACCF /* AppFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppFactory.swift; sourceTree = "<group>"; };
 		CCDECEF01E58DC5900CFACCF /* GCDWebServers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GCDWebServers.framework; path = Carthage/Build/iOS/GCDWebServers.framework; sourceTree = "<group>"; };
@@ -52,6 +58,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CCD0856E1E6AEF26008E6FA6 /* view */ = {
+			isa = PBXGroup;
+			children = (
+				CCD0856F1E6AEF43008E6FA6 /* ResolutionSelectionControl.swift */,
+			);
+			path = view;
+			sourceTree = "<group>";
+		};
+		CCD085711E6B3151008E6FA6 /* controller */ = {
+			isa = PBXGroup;
+			children = (
+				CCD085721E6B3162008E6FA6 /* PlayerViewController.swift */,
+			);
+			path = controller;
+			sourceTree = "<group>";
+		};
 		CCDECEE91E58A9D400CFACCF /* application */ = {
 			isa = PBXGroup;
 			children = (
@@ -102,6 +124,8 @@
 				CCDECEE91E58A9D400CFACCF /* application */,
 				CCDECF081E59148300CFACCF /* extensions */,
 				CCFAE6D61E37E355005300F8 /* model */,
+				CCD0856E1E6AEF26008E6FA6 /* view */,
+				CCD085711E6B3151008E6FA6 /* controller */,
 				CCFAE6D71E37E355005300F8 /* res */,
 			);
 			path = VideoPlayer;
@@ -110,6 +134,7 @@
 		CCFAE6D61E37E355005300F8 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				CCD085681E6ADB10008E6FA6 /* Mutex.swift */,
 				CC3862CF1E619A7200D6A598 /* Playlist.swift */,
 				CC3862CD1E6199BC00D6A598 /* PlaylistParser.swift */,
 				CC3862D11E61E43700D6A598 /* Segment.swift */,
@@ -219,12 +244,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CCD085701E6AEF43008E6FA6 /* ResolutionSelectionControl.swift in Sources */,
 				CCDECF0A1E5914AD00CFACCF /* URLSession+Utils.swift in Sources */,
 				CC2ACA041E5A63E7004BA2A6 /* AppConfig.swift in Sources */,
 				CCA575D21E632F58002B7CF2 /* StreamProxyPolicy.swift in Sources */,
 				CCDECEED1E58A9E000CFACCF /* AppFactory.swift in Sources */,
 				CC3862D21E61E43700D6A598 /* Segment.swift in Sources */,
 				CC3862D01E619A7200D6A598 /* Playlist.swift in Sources */,
+				CCD085731E6B3162008E6FA6 /* PlayerViewController.swift in Sources */,
+				CCD085691E6ADB10008E6FA6 /* Mutex.swift in Sources */,
 				CCDECEEB1E58A9D400CFACCF /* AppDelegate.swift in Sources */,
 				CC3862CE1E6199BC00D6A598 /* PlaylistParser.swift in Sources */,
 				CCDECEF41E59096700CFACCF /* StreamProxy.swift in Sources */,

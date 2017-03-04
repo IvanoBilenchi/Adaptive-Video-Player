@@ -97,6 +97,9 @@ protocol Playlist {
 
 /// Models video resolutions
 struct Resolution {
+    
+    static let zero = Resolution(width: 0, height: 0)
+    
     let width: UInt
     let height: UInt
 }

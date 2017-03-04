@@ -23,15 +23,35 @@ struct HTTP {
     }
 }
 
+/// Delegates receive status updates from the proxy
+protocol StreamProxyDelegate: class {
+    func streamProxy(_ proxy: StreamProxy, didReceiveMainPlaylist playlist: Playlist)
+}
+
+/// Segment replacement policies
+protocol StreamProxyPolicy: class {
+    func streamProxy(_ proxy: StreamProxy, replacementForSegment segment: Segment) -> Segment
+}
+
 /// Streaming proxy, forwards local requests to the remote playlist host.
 /// Allows full control of playlist and segment payloads.
 class StreamProxy: GCDWebServer {
     
     // MARK: Public properties
     
-    weak var policy: StreamProxyPolicy?
+    weak var proxyDelegate: StreamProxyDelegate?
     
-    private(set) var playlist: Playlist
+    private var _policy: StreamProxyPolicy?
+    var policy: StreamProxyPolicy? {
+        set { mutex.withCriticalScope { _policy = newValue } }
+        get { return mutex.withCriticalScope { _policy } }
+    }
+    
+    private(set) var playlist: Playlist {
+        didSet {
+            DispatchQueue.main.async { self.proxyDelegate?.streamProxy(self, didReceiveMainPlaylist: self.playlist) }
+        }
+    }
     
     var remotePlaylistUrl: URL {
         return playlist.url
@@ -49,6 +69,7 @@ class StreamProxy: GCDWebServer {
     
     fileprivate var playlistParsed = false
     fileprivate let remoteHostUrl: URL
+    fileprivate let mutex = Mutex()
     
     // MARK: Lifecycle
     
@@ -118,6 +139,7 @@ class StreamProxy: GCDWebServer {
             string = string.replacingOccurrences(of: remoteHostUrl.absoluteString + "/",
                                                  with: localServerUrl!.absoluteString,
                                                  options: .caseInsensitive)
+            print(string)
             output.data = string.data(using: .utf8)
         }
         
