@@ -19,12 +19,13 @@ class AppFactory {
     
     lazy var rootViewController: UIViewController = {
         let navController = UINavigationController(rootViewController: self.playerViewController)
-        navController.navigationBar.isTranslucent = false
+        navController.navigationBar.barStyle = .black
         return navController
     }()
     
     lazy var playerViewController: AVPlayerViewController = {
         let controller = AVPlayerViewController()
+        controller.edgesForExtendedLayout = .init(rawValue: 0)
         
         if let url = self.proxy.localPlaylistUrl {
             let player = AVPlayer(url: url)
