@@ -139,7 +139,6 @@ class StreamProxy: GCDWebServer {
             string = string.replacingOccurrences(of: remoteHostUrl.absoluteString + "/",
                                                  with: localServerUrl!.absoluteString,
                                                  options: .caseInsensitive)
-            print(string)
             output.data = string.data(using: .utf8)
         }
         
